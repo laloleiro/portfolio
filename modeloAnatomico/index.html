@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visor 3D de Anatomía</title>
+    <style>
+        #ui-container {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        #info-panel{
+            font-size: small;
+            color: white;
+        }
+        .subtitle{
+            color:white;
+            position:absolute;
+            right: 2em;
+        }
+        .instructions{
+            background-color:black;
+            color:whitesmoke;
+        }
+        .startScreen{
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position:absolute;
+            z-index: 100;
+        }
+        .startScreen div{
+            padding: 2rem 8rem;
+            text-align: center;
+            border-radius: 10px;
+        }
+    </style>
+  <script type="module" crossorigin src="/modeloAnatomico/assets/index-_wlwPAHQ.js"></script>
+  <link rel="stylesheet" crossorigin href="/modeloAnatomico/assets/index-Dj37oPQe.css">
+</head>
+<body>
+    <h1 id="wave-text">BODY CHUNKS!</h1> 
+    <h3 class="subtitle">Keep learning!</h3>
+    <div id="ui-container">
+        <div id="info-panel"></div>
+    </div>
+    <div class="startScreen">
+        <div class="instructions">
+            <h2>3d Anatomic Visor</h2>
+            <p>Choose a model.</p>
+            <p>Click on.</p>
+            <p>Discover your body.</p>
+            <button id="play-button" onclick="hiddeBtn();">▶  Start</button>
+        </div>
+    </div>
+    <script>   
+        function hiddeBtn(){
+            document.querySelector(".startScreen").style.display="none";
+            dispatchEvent(new Event("playCliked"));
+       }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const text = document.getElementById("wave-text");
+            const letters = text.innerText.split(""); // Split text into letters
+
+            text.innerHTML = ""; // Clear existing text
+
+            letters.forEach((letter, index) => {
+                let span = document.createElement("span");
+                span.innerText = letter;
+                span.style.animationDelay = `${index * 100}ms`; // Different delay for each letter
+                text.appendChild(span);
+            });
+        });
+
+    </script>
+</body>
+</html>
