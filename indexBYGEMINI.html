@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="description" content="Creative technologist three.js 3D programmer. Animation lover.">
+    <meta name="author" content="@la_loleiro">
+    <title>@la_loleiro</title>
+    <!-- Incluye Tailwind CSS para un estilo rápido y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="favicon.ico">
+    <style>
+      body {
+        font-family: 'Montserrat', sans-serif;
+        margin: 0;
+        overflow: hidden; /* Evita el scroll mientras carga */
+      }
+      #c {
+        width: 100%;
+        height: 85vh;
+        display: block;
+        opacity: 0; /* Inicialmente invisible, se hará visible con animación */
+        transition: opacity 1s ease-in-out; /* Transición para la visibilidad del canvas */
+      }
+      #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #99cccc; /* Color de fondo similar al de tu escena */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+        font-size: 1.5rem;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out; /* Transición para la pantalla de carga */
+      }
+      .loader-spinner {
+        border: 8px solid rgba(255, 255, 255, 0.3);
+        border-top: 8px solid #fff;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+      /* Estilos básicos para el header y el menú, adaptados para ser responsivos con Tailwind */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background-color: #f8f8f8; /* Un color claro para el header */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .logo img {
+        height: 40px; /* Tamaño del logo */
+      }
+      .iconoHamburguesa {
+        background: none;
+        border: none;
+        cursor: pointer;
+        display: block; /* Siempre visible, pero el menú solo aparece en móvil */
+      }
+      .menuPrincipal {
+        display: none; /* Oculto por defecto, visible en desktop */
+      }
+      .menuPrincipal ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        gap: 1.5rem;
+      }
+      .menuPrincipal a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: background-color 0.3s ease;
+      }
+      .menuPrincipal a:hover {
+        background-color: #e0e0e0;
+      }
+
+      /* Responsividad con Tailwind y CSS */
+      @media (min-width: 768px) { /* md breakpoint */
+        .iconoHamburguesa {
+          display: none; /* Oculta el icono de hamburguesa en pantallas grandes */
+        }
+        .menuPrincipal {
+          display: block; /* Muestra el menú en pantallas grandes */
+        }
+      }
+
+      /* Clase para mostrar/ocultar el menú en dispositivos móviles */
+      .menuPrincipal.activo {
+        display: block;
+        position: absolute;
+        top: 60px; /* Ajusta según la altura de tu header */
+        left: 0;
+        width: 100%;
+        background-color: #f8f8f8;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        padding: 1rem;
+      }
+      .menuPrincipal.activo ul {
+        flex-direction: column;
+        align-items: center;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id="loading-screen">
+      <div class="loader-spinner"></div>
+      <div id="loading-progress">Cargando... 0%</div>
+    </div>
+
+    <header>
+      <div class="logo">
+        <div id="gifs-rows">
+          <img src="https://placehold.co/60x40/cccccc/333333?text=Logo" alt="It's a banana!"> <!-- Placeholder for the image -->
+        </div>
+      </div>
+      <button class="iconoHamburguesa" onclick="mostrarOcultarMenu();">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+        </svg>
+      </button>
+      <nav class="menuPrincipal">
+        <ul role="navigation">
+          <li><a href="visualunderstanding.html">Visual Understanding</a></li>
+          <li><a href="works.html">Works</a></li>
+        </ul>
+      </nav>
+    </header>
+    <main role="main">
+      <canvas id="c"></canvas>
+    </main>
+
+    <!-- GSAP vía CDN -->
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+
+
+    <script type="module">
+      // Importaciones de Three.js y sus addons usando unpkg.com, que es más adecuado para módulos ES.
+      import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.module.js';
+      import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/controls/OrbitControls.js';
+      import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/loaders/GLTFLoader.js';
+
+      // Acceder a GSAP que se carga globalmente (ya que se carga con un script tag normal)
+      const gsap = window.gsap;
+
+      function main() {
+        // --- GESTIÓN DE LA CARGA DE RECURSOS ---
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingProgress = document.getElementById('loading-progress');
+        const canvasElement = document.getElementById('c');
+
+        const manager = new THREE.LoadingManager();
+
+        manager.onStart = function (url, itemsLoaded, itemsTotal) {
+          console.log(`Started loading file: ${url}.\nLoaded ${itemsLoaded} of ${itemsTotal} files.`);
+          loadingScreen.style.opacity = 1; // Asegura que la pantalla de carga sea visible al inicio
+        };
+
+        manager.onProgress = function (url, itemsLoaded, itemsTotal) {
+          const progress = Math.round((itemsLoaded / itemsTotal) * 100);
+          loadingProgress.textContent = `Cargando... ${progress}%`;
+          console.log(`Loading file: ${url}.\nLoaded ${itemsLoaded} of ${itemsTotal} files.`);
+        };
+
+        manager.onLoad = function () {
+          console.log('Todos los recursos cargados!');
+          // Ocultar la pantalla de carga con una animación
+          gsap.to(loadingScreen, {
+            opacity: 0,
+            duration: 1,
+            onComplete: () => {
+              loadingScreen.style.display = 'none';
+              // Hacer visible el canvas con una animación de fundido
+              gsap.to(canvasElement, { opacity: 1, duration: 1.5 });
+
+              // Animar la entrada de las tetas y las nubes
+              animateObjectsIn();
+            }
+          });
+        };
+
+        manager.onError = function (url) {
+          console.error('There was an error loading ' + url);
+          loadingProgress.textContent = `Error al cargar: ${url}`;
+        };
+
+        // RENDERER
+        const canvas = document.querySelector('#c');
+        const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+        renderer.shadowMap.enabled = true;
+
+        // CAMERA
+        const fov = 45;
+        const aspect = 2;
+        const near = 1;
+        const far = 50;
+        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.position.set(0, 5, 20);
+
+        // CONTROLS
+        const controls = new OrbitControls(camera, canvas);
+        controls.target.set(0, 5, 0);
+        controls.update();
+
+        // SCENE
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x99cccc);
+        { // FOG
+          const color = 0xFFFFFF; // white
+          const nearFog = 10;
+          const farFog = 100;
+          scene.fog = new THREE.Fog(color, nearFog, farFog);
+        }
+
+        const tetas = [];
+        const nubes = [];
+
+        // Función para crear una "teta"
+        function makeTetaInstance(x, y, z, colorMama, colorPezon) {
+          const teta = new THREE.Object3D();
+          scene.add(teta);
+
+          const sphereRadius = 2.8;
+          const sphereWidthDivisions = 32;
+          const sphereHeightDivisions = 16;
+          const sphereGeo = new THREE.SphereGeometry(sphereRadius, sphereWidthDivisions, sphereHeightDivisions);
+          const sphereMat = new THREE.MeshPhongMaterial({ color: colorMama, transparent: true, opacity: 0 }); // Inicialmente transparente
+          const mesh = new THREE.Mesh(sphereGeo, sphereMat);
+          teta.add(mesh);
+
+          const pezon = new THREE.Object3D();
+          teta.add(pezon);
+
+          const radiusTop = 0.5;
+          const radiusBottom = 1;
+          const height = 1;
+          const radialSegments = 32;
+          const pezonMat = new THREE.MeshPhongMaterial({ color: colorPezon, transparent: true, opacity: 0 }); // Inicialmente transparente
+          const pezonGeom = new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments);
+          const pezonMesh = new THREE.Mesh(pezonGeom, pezonMat);
+          pezonMesh.rotation.set(0, -1.5708, -1.5708);
+          pezonMesh.position.set(0, 0, 3);
+          pezon.add(pezonMesh);
+
+          teta.position.set(x, y, z);
+          teta.scale.set(0.01, 0.01, 0.01); // Inicialmente muy pequeño para animar escala
+
+          tetas.push({ object: teta, material1: sphereMat, material2: pezonMat }); // Guardar para animar
+          return teta;
+        }
+
+        // Creación de las "tetas"
+        makeTetaInstance(-8, 2, 3, 0x1a0d00, 0x4f2903);
+        makeTetaInstance(-5, 9, 0, '#CA9', 0xbb7458);
+        makeTetaInstance(3, 5, -4, 0xe0c4ad, 0xAC7B57);
+        makeTetaInstance(12, 0, -8, 0xf3e4b2, 0xbb7458);
+        makeTetaInstance(18, 10, -8, 0x93775b, 0x815e3d);
+
+        // NUBES
+        {
+          const loader = new GLTFLoader(manager); // Pasa el manager al cargador GLTF
+          const srcNubes = ['models/gltf/nube.glb', 'models/gltf/nube_s.glb'];
+
+          const numNubes = 5;
+          loadNube(srcNubes[1], 0, numNubes - 2, numNubes - 1);
+          loadNube(srcNubes[1], -numNubes - 5, 10, numNubes);
+          loadNube(srcNubes[1], -numNubes, 12, -numNubes - 9);
+          loadNube(srcNubes[0], 3, 9, -numNubes - 4);
+          loadNube(srcNubes[1], 8, 6, 1);
+          loadNube(srcNubes[0], -8, numNubes, 4);
+
+          function loadNube(src, x, y, z) {
+            loader.load(src, function (gltf) {
+              scene.add(gltf.scene);
+              gltf.scene.children.forEach((obj) => {
+                if (obj.isMesh) {
+                  obj.material.transparent = true;
+                  obj.material.opacity = 0; // Inicialmente invisible
+                }
+                obj.position.x = x;
+                obj.position.y = y;
+                obj.position.z = z;
+              });
+              gltf.scene.scale.set(0.01, 0.01, 0.01); // Inicialmente muy pequeño
+              nubes.push(gltf.scene); // Guardar para animar
+            }, undefined, function (error) {
+              console.error(error);
+            });
+          }
+        }
+
+        // LUCES
+        { // AMBIENT LIGHT
+          const ambient = new THREE.AmbientLight(0xffffff);
+          scene.add(ambient);
+        }
+
+        { // DIRECTIONAL LIGHT
+          const color = 0xffffff;
+          const intensity = 3;
+          const light = new THREE.DirectionalLight(color, intensity);
+          light.position.set(0, 5, 5);
+          light.target.position.set(-5, 0, 0);
+          scene.add(light);
+          scene.add(light.target);
+        }
+
+        // --- ANIMACIÓN DE OBJETOS DESPUÉS DE LA CARGA ---
+        function animateObjectsIn() {
+            // Animar la escala y opacidad de las "tetas"
+            tetas.forEach((item, index) => {
+                gsap.to(item.object.scale, {
+                    x: 1, y: 1, z: 1,
+                    duration: 1.5,
+                    ease: "power2.out",
+                    delay: 0.5 + index * 0.1 // Retraso escalonado para un efecto agradable
+                });
+                gsap.to(item.material1, {
+                    opacity: 1,
+                    duration: 1.5,
+                    delay: 0.5 + index * 0.1
+                });
+                gsap.to(item.material2, {
+                    opacity: 1,
+                    duration: 1.5,
+                    delay: 0.5 + index * 0.1
+                });
+            });
+
+            // Animar la escala y opacidad de las nubes
+            nubes.forEach((nube, index) => {
+                gsap.to(nube.scale, {
+                    x: 1, y: 1, z: 1,
+                    duration: 1.5,
+                    ease: "power2.out",
+                    delay: 0.8 + index * 0.15 // Otro retraso escalonado
+                });
+                nube.children.forEach(obj => {
+                    if (obj.isMesh) {
+                        gsap.to(obj.material, {
+                            opacity: 1,
+                            duration: 1.5,
+                            delay: 0.8 + index * 0.15
+                        });
+                    }
+                });
+            });
+        }
+
+        // Función para redimensionar el renderizador
+        function resizeRendererToDisplaySize(renderer) {
+          const canvas = renderer.domElement;
+          const pixelRatio = window.devicePixelRatio;
+          const width = canvas.clientWidth * pixelRatio | 0;
+          const height = canvas.clientHeight * pixelRatio | 0;
+          const needResize = canvas.width !== width || canvas.height !== height;
+          if (needResize) {
+            renderer.setSize(width, height, false);
+          }
+          return needResize;
+        }
+
+        // Variables de animación de nubes (movimiento continuo)
+        const cloudSpeed = 0.005; // Velocidad de las nubes
+
+        function render(time) {
+          // Movimiento de las nubes
+          nubes.forEach((obj) => {
+            obj.position.x += cloudSpeed;
+            // Reiniciar la posición de la nube si se sale de la vista para un movimiento continuo
+            if (obj.position.x > camera.position.x + far) {
+              obj.position.x = camera.position.x - far; // O un valor más allá del rango visible
+            }
+          });
+
+          if (resizeRendererToDisplaySize(renderer)) {
+            const canvas = renderer.domElement;
+            camera.aspect = canvas.clientWidth / canvas.clientHeight;
+            camera.updateProjectionMatrix();
+          }
+
+          controls.update(); // Asegura que los controles de órbita funcionen
+
+          renderer.render(scene, camera);
+          requestAnimationFrame(render);
+        }
+
+        // Inicia el bucle de renderizado solo después de que la ventana esté cargada.
+        // Esto asegura que todos los elementos HTML y scripts estén disponibles.
+        window.onload = function() {
+            requestAnimationFrame(render);
+        };
+      }
+
+      // Función para el menú de hamburguesa (si se necesita en una web real)
+      function mostrarOcultarMenu() {
+        const menu = document.querySelector('.menuPrincipal');
+        menu.classList.toggle('activo');
+      }
+      window.mostrarOcultarMenu = mostrarOcultarMenu; // Hace la función accesible globalmente
+      // Inicia la aplicación principal
+      main();
+    </script>
+  </body>
+</html>
