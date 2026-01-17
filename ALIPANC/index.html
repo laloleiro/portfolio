@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<base target="_top">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>ALIPANC map</title>
+	<link rel="shortcut icon" type="image/x-icon" href="icons/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.3.0/dist/leaflet.markercluster.js"></script>
+	
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="css/markercluster@1.3.0.css" /> 
+
+	<style>
+		.leaflet-container a{color:#4e148c;}
+		.leaflet-popup-content{
+			text-align: center;
+		}
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding:0;
+		}
+		#map{
+			height: 100%;
+			width: 100%
+		}
+		.leaflet-container {
+			height: 400px;
+			width: 600px;
+			max-width: 100%;
+			max-height: 100%;
+		}
+		ul{
+			font-weight: bold;
+		}
+		li{
+			font-weight:normal;
+		}
+
+		#results {
+            white-space: pre;
+        }
+
+        .results-container {
+            width: 100%;
+        }
+
+		/* Aplica el fondo morado a la opción seleccionada */
+		.leaflet-control-layers-selector:checked {
+		    accent-color: #4e148c; /* Cambia el color del radio (soporte en navegadores modernos) */
+		}
+
+		/* Encuentra el elemento padre del radio y cambia su fondo */
+		.leaflet-control-layers-selector:checked + span {
+		    background-color: #4e148c !important;
+		    color: white; /* Opcional: cambia el texto a blanco */
+		    /*border-radius: 5px; /* Opcional: redondea las esquinas */
+		    /*padding: 4px 8px; /* Espaciado interno */
+		}
+
+	</style>
+	<!-- Easy Button -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+		<script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+	<!-- Fin easy Button -->
+	<!--SEARCH BOX -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+      <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+      <script src="https://cdn.jsdelivr.net/npm/fuse.js@5.0.10-beta/dist/fuse.min.js"></script>
+      <script src="js/Leaflet.AnimatedSearchBox.js"></script>
+      <link rel="stylesheet" href="css/Leaflet.AnimatedSearchBox.css">
+
+</head>
+<body>
+
+<div id="map"></div>
+<script>
+	
+	const map = L.map('map', {
+		center: [41.34,2.11],
+		zoom: 6,
+	});
+	
+	const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		attribution: false
+	}).addTo(map);
+
+   const searchbox = L.control.searchbox({
+        position: 'topright',
+        expand: 'left',
+        width: '450px',
+        autocompleteFeatures: ['setValueOnClick']
+    }).addTo(map);
+
+	//const centros = L.layerGroup(); //todos los centros
+	const centros = L.markerClusterGroup();
+    const filtros = L.markerClusterGroup();
+	const overlays = {
+		'Todos': centros,
+		'Filtrados': filtros
+	};
+	const layerControl = L.control.layers(overlays).addTo(map);
+	//map.addLayer(centros);
+	
+	function csvJSON(csv){
+		  let lines=csv.split("\n");
+		  let result = [];
+		  let headers=lines[0].split(";");
+		  console.log("HEADERS ");
+		  console.log(headers);
+		  for(let i=1;i<lines.length;i++){
+		      let obj = {};
+		      obj.id=i;
+		      let currentline=lines[i].split(";");
+		      for(let j=0;j<headers.length-1;j++){
+		          obj[headers[j]] = currentline[j];
+		      }
+		      result.push(obj);
+		  }
+		  console.log(result);
+		  return result; //JavaScript object
+		  //return JSON.stringify(result); //JSON
+	}
+
+    let fuse;
+	async function fetchCSV(url) {
+        try {
+            const response = await fetch(url);
+            const data = await response.text();
+            console.log(data);
+            const gruposJSON = csvJSON(data);
+            console.log('CSV LOADED');
+            //console.log(gruposJSON);
+            loadCentres(gruposJSON, centros);
+
+	        fuse = new Fuse(gruposJSON, { matchAll:false,
+	        				  threshold: 0.1,
+							  keys: [ 'groupName', 'centre', 'ciudad'],
+							  includeMatches: true,
+							});
+        } catch (error) {
+            console.error('Error fetching CSV:', error);
+        }
+    }
+	
+    fetchCSV('./grupos2JSON.csv');
+
+	function loadCentres(gruposJSON, layerName){
+		let customIcon = {
+		 iconUrl:'icons/icons8-map-marker-48.png',
+		 iconSize:[48,48]
+		}
+		let myIcon = L.icon(customIcon);
+
+		for (const grupo of gruposJSON) {
+			let iconOptions = {
+				title: grupo.centre,
+				icon:myIcon
+			}
+			//---> MODIFICAR EL ICONO
+			//var centro = L.marker(new L.LatLng(grupo.latlong.split(",")[0],grupo.latlong.split(",")[1]), iconOptions);
+			let centro = L.marker(new L.LatLng(grupo.latlong.split(",")[0],grupo.latlong.split(",")[1]));
+			centro.ciudad = grupo.ciudad;
+			centro.bindPopup('<a href="'+grupo.link+'" target="_blank"><b>'+grupo.groupName+'</b></a><br/><span>'+grupo.centre+'</span>')
+			layerName.addLayer(centro);
+		}
+		map.addLayer(layerName);
+	}
+
+
+	function toggleLayerVisibility(layer, isVisible) {
+	    if (isVisible) {
+	        if (!map.hasLayer(layer)) {
+	            map.addLayer(layer);
+	        }
+	    } else {
+	        if (map.hasLayer(layer)) {
+	            map.removeLayer(layer);
+	        }
+	    }
+	}
+
+    searchbox.onInput("keyup", function (e) {
+    	let value = searchbox.getValue();
+        if (value != "") {
+        	toggleLayerVisibility(centros, false);
+    		toggleLayerVisibility(filtros, true);
+    		
+            let results = fuse.search(value);
+
+    		// Obtener valores únicos con Set
+	        const matchedStrings = [...new Set(results.flatMap(result => 
+	            result.matches ? result.matches.map(match => match.value) : []
+	        ))];
+
+	        searchbox.setItems(matchedStrings);
+	        filterSearchResutls(false); 
+        } else {
+            searchbox.clearItems();
+            toggleLayerVisibility(centros, true);
+    		toggleLayerVisibility(filtros, false);
+        }
+    });
+	
+	searchbox.onButton("click", function(){ 
+		filterSearchResutls();
+		closeSelect();
+	});
+
+    function filterSearchResutls(closeSearchBox) {
+    	filtros.clearLayers();
+        var value = searchbox.getValue();
+        if (value != "") {
+            var results = fuse.search(value);
+            let filteredItems = results.map(result => result.item); 
+			loadCentres(filteredItems, filtros);
+        }else{
+        	closeSelect();
+        }
+    }
+
+    function closeSelect(){
+        setTimeout(function () {
+        	 //searchbox.clearItems(); 
+	            searchbox.hide();
+	            searchbox.clear();
+	        }, 200);
+ 
+    }
+
+    searchbox.onAutocomplete("click", function (e) {
+	    searchbox.setValue(e.target.innerHTML); // Establece el valor seleccionado en la caja de búsqueda
+	    searchbox.clearItems(); // Oculta la lista de sugerencias
+	    searchbox.hide(); // Cierra la caja de búsqueda
+	    filterSearchResutls(true); // Filtra los resultados
+	});
+
+
+    //Watermark
+    L.Control.Watermark = L.Control.extend({
+	    onAdd: function(map) {
+	        var img = L.DomUtil.create('img');
+
+	        img.src = './img/logo_alpha.png';
+	        img.style.width = '200px';
+
+	        return img;
+	    }
+	});
+
+	L.control.watermark = function(opts) {
+	    return new L.Control.Watermark(opts);
+	}
+
+	L.control.watermark({ position: 'bottomleft' }).addTo(map);
+
+
+	//HOME button
+	L.easyButton('<i class="fa fa-home" style="color:#792d8c"></i>', function(){
+              window.location.href = "https://alipanc.org/";
+              }).addTo(map);
+	</script>
+</body>
+</html>

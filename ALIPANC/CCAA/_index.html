@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>ALIPANC research map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="icon" type="image/x-icon" href="/img/favicon.ico"> -->
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="alternate" hreflang="x-default" href="https://alipanc.org/researchmap">
+    <link rel="alternate" hreflang="es" href="https://alipanc.org/researchmap">
+    <link rel="alternate" hreflang="en" href="https://alipanc.org/en/researchmap">
+   
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    
+    <!-- Leaflet Marker Cluster CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+    <!-- Easy button - home icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
+
+
+    <!-- Search box ---> 
+     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">      
+    <link rel="stylesheet" href="css/Leaflet.AnimatedSearchBox.css">
+
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding:0;
+        }
+        #map{
+            height: 100%;
+            width: 100%;
+        }
+        .leaflet-container {
+            height: 400px;
+            width: 600px;
+            max-width: 100%;
+            max-height: 100%;
+        }
+        ul{
+            font-weight: bold;
+        }
+        li{
+            font-weight:normal;
+        }
+
+
+       .leaflet-container a { 
+            color:#4e148c;
+        }
+        .leaflet-popup-content{
+            text-align: center;
+        }
+
+       
+    </style>
+</head>
+<body>
+   
+    <div id="map"></div>
+    <!--<div id="top-header">
+        <div class="container">
+            <ul>
+                <li ><a href="https://alipanc.org/grupos-alipanc/" title="Cambiar a Español"><img src="./img/es.svg" alt="es" width="15" height="15"><span lang="es">Español</span></a></li>
+                <li><a href="https://alipanc.org/en/groups/" title="Cambiar a Inglés"><img src="./img/en.svg" alt="en" width="15" height="15"><span lang="en">English(Inglés)</span></a></li>
+            </ul>
+        </div>
+    </div> -->
+
+    <!-- Leaflet JS -->
+    <script src="./js/leaflet@1.9.4.js"></script>
+    <script src="./js/leaflet.markercluster@1.3.0.js"></script>
+    <!-- Easy Button -->
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
+
+    <!-- Cargar el GeoJSON de las comunidades autónomas -->
+    <script>
+        const map = L.map('map', {
+            center: [41.34,2.11], //Barcelona como centro inicial
+            zoom: 6,
+        });
+
+        const positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png', {
+            minZoom: 1,
+            maxZoom: 8,
+            attribution: false
+        }).addTo(map);
+
+        //const centros = L.layerGroup(); //todos los centros
+        const centros = L.layerGroup();
+        const filtros = L.markerClusterGroup();
+        const overlays = {
+            'Todos': centros,
+            'Filtrados': filtros
+        };
+        
+        let comunidades = {};
+        const markersCluster = L.markerClusterGroup();
+        let activeFilters = {}; // Track selected filters
+
+        // GeoJSON de las comunidades autónomas (puedes enlazarlo o guardarlo en un archivo .geojson)
+        fetch("./CCAA.geojson")
+            .then(response => response.json())
+            .then(data => {
+                L.geoJson(data, {
+                    style: function (feature) {
+                        return {
+                            color: "#712782",
+                            weight: 1,
+                            opacity: 0.5,
+                            fillColor: "#712782",
+                            fillOpacity: 0.5
+                        };
+                    },
+                    onEachFeature: function (feature, layer) {
+                      //  console.log(feature.properties);
+                        layer.bindPopup("<b>" + feature.properties.acom_name + "</b>");
+                    }
+                }).addTo(map);
+            });
+
+        fetch("./portugal.geojson")
+            .then(response => response.json())
+            .then(data => {
+                L.geoJson(data, {
+                    style: function (feature) {
+                        return {
+                            color: "#712782",
+                            weight: 1,
+                            opacity: 0.5,
+                            fillColor: "#712782",
+                            fillOpacity: 0.5
+                        };
+                    },
+                    onEachFeature: function (feature, layer) {
+                      //  console.log(feature.properties);
+                        layer.bindPopup("<b>" + feature.properties.acom_name + "</b>");
+                    }
+                }).addTo(map);
+            });
+        // --------------------
+
+
+        let fuse;
+
+        let fieldOverlays = {}; // Store layers for checkboxes
+        let fieldValues = {}; // Store unique values for each "f_" field = filtros
+      
+
+        fetchCSV('./grupos2JSON.csv');
+
+        function csvJSON(csv){
+          let lines=csv.split("\n") 
+                .map(line => line.replace(/\r/g, "")) // Eliminar \r de cada línea
+                .filter(line => line.trim() !== ""); //  Eliminar líneas vacías
+          let result = [];
+          let headers=lines[0].split(";");
+          for(let i=1;i<lines.length;i++){
+              let obj = {};
+              obj.id=i;
+              let currentline=lines[i].split(";");
+
+              for(let j=0;j<currentline.length;j++){
+                  obj[headers[j]] = currentline[j];
+              }
+              result.push(obj);
+          }
+          return result; //JavaScript object
+        }
+
+
+        async function fetchCSV(url) {
+            try {
+                const response = await fetch(url);
+                const data = await response.text();
+                const gruposJSON = csvJSON(data);
+                console.log('CSV LOADED!',gruposJSON);
+                //loadCentres(gruposJSON, centros);
+
+                loadCentrosCCAA(gruposJSON);
+
+                fuse = new Fuse(gruposJSON, { 
+                                    matchAll:false,
+                                    threshold: 0.1,
+                                    keys: [ 'groupName', 'centre', 'ciudad', 'MajorDesease'],
+                                    includeMatches: true,
+                                });
+                processFilters(gruposJSON);
+            } catch (error) {
+                console.error('Error fetching CSV:', error);
+            }
+        }
+    
+
+       function loadCentrosCCAA(gruposJSON){
+            let clusterCCAA = {}; // Objeto para almacenar clusters por CCAA
+
+            gruposJSON.forEach(grupo => {
+                if (!comunidades[grupo.CCAA]) {
+                    comunidades[grupo.CCAA] = []; // Inicializa el array si no existe
+                    clusterCCAA[grupo.CCAA] = L.markerClusterGroup({
+                            //maxClusterRadius: 0, // Agrupación solo por CCAA
+                            iconCreateFunction: function (cluster) {
+                                let count = cluster.getChildCount(); // Número de marcadores en el cluster
+                                let size = count < 10 ? 'small' : count < 50 ? 'medium' : 'large'; // Tamaño dinámico
+
+                                return L.divIcon({
+                                    html: `<div class="custom-cluster ${size}">${count}</div>`,
+                                    className: 'custom-cluster-wrapper',
+                                    iconSize: L.point(40, 40) // Tamaño del cluster
+                                });
+                            }
+                        });
+                }
+                comunidades[grupo.CCAA].push(grupo);
+            });
+
+            const customIcon = L.icon({
+                iconUrl: 'icons/marker-icon-2x.png', // Ensure the path is correct
+                //iconSize: [48, 48], // Size of the icon
+            });
+
+            // L.marker(new L.LatLng(grupo.latlong.split(",")[0], grupo.latlong.split(",")[1]), { icon: customIcon} )
+            // var greenIcon = L.icon({
+            //     iconUrl: 'icons/marker-icon-2x.png',
+        
+            //     iconSize:     [38, 95], // size of the icon
+            //     shadowSize:   [50, 64], // size of the shadow
+            //     iconAnchor:   [22, 94], // point of the icon which will correspond to marker's location
+            //     shadowAnchor: [4, 62],  // the same for the shadow
+            //     popupAnchor:  [-3, -76] // point from which the popup should open relative to the iconAnchor
+            // });
+
+            // Agregar los marcadores agrupados por comunidad autónoma
+            Object.keys(comunidades).forEach(comunidad => {
+                comunidades[comunidad].forEach(grupo => {
+                    const marker = L.marker(new L.LatLng(grupo.latlong.split(",")[0], grupo.latlong.split(",")[1]))
+                        .bindPopup(`<a href="${grupo.link}" target="_blank"><b>${grupo.groupName}</b></a><br/><span>${grupo.centre}</span>`);
+                    grupo.marker = marker; // Store marker reference
+                    clusterCCAA[comunidad].addLayer(marker);
+                });
+
+                // Agregar el grupo de clusters al mapa
+                centros.addLayer(clusterCCAA[comunidad]);
+            });
+            map.addLayer(centros); // Show all markers initially
+       }
+
+// ADDING "f_" dropbox -----
+
+    function processFilters(gruposJSON) {
+        console.log("CALLING  processFilters  ---")
+        // Identify "f_" fields dynamically
+        let sample = gruposJSON[0]; // Take the first group to check field names
+        Object.keys(sample).forEach(field => {
+            if (field.startsWith("f_")) {
+                let formattedName = field.replace("f_", "").replace(/_/g, " "); // Convert to readable format
+                fieldOverlays[formattedName] = L.layerGroup(); // Create a layer group
+                fieldValues[formattedName] = new Set(); // Store unique values
+
+                // Collect unique values
+                gruposJSON.forEach(grupo => {
+                    if (grupo[field]) {
+                        let values = grupo[field].split(",").map(v => v.trim());
+                        values.forEach(v => fieldValues[formattedName].add(v));
+                    }
+                });
+            }
+        });
+
+        createFilterDropdown(); // Build UI
+    }
+
+
+    function createFilterDropdown() {
+        console.log("CALLING  createFilterDropdown  ---");
+
+        let controlContainer = document.querySelector(".leaflet-control-layers-overlays"); // Layer control UI
+
+        // Prevent Leaflet from clearing the dropdown
+        if (document.querySelector(".filter-dropdown")) return;
+
+        //¿Es necesario?
+        let dropdownContainer = document.createElement("div");
+        dropdownContainer.className = "filter-dropdown-container";
+
+        Object.keys(fieldValues).forEach(field => {
+            // Create dropdown wrapper
+            let dropdown = document.createElement("div");
+            dropdown.className = "filter-dropdown";
+            dropdown.setAttribute("data-category", field);
+
+            // Dropdown title
+            let title = document.createElement("div");
+            title.textContent = field+" ";
+            title.className = "filter-title";
+
+
+            // Checkbox container
+            let checkboxList = document.createElement("div");
+            checkboxList.className = "checkbox-list";
+            //checkboxList.className = "leaflet-control-layers-selector";
+
+            // Add checkboxes to each filter
+            fieldValues[field].forEach(value => {
+                let label = document.createElement("label");
+                let checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.className= "leaflet-control-layers-selector";
+                checkbox.value = value;
+                //checkbox.onchange = () => applyFilters();
+                checkbox.addEventListener("click", function () {
+                    //event.preventDefault();  // Prevent the default behavior of the checkbox change
+                    checkboxList.classList.toggle("active");
+                    applyFilters();
+                });
+
+                // checkbox.onchange = (event) => {
+                //     event.preventDefault();  // Prevent the default behavior of the checkbox change
+                //     applyFilters();
+                // };
+
+                // // Check if the value is in the activeFilters and check the checkbox
+                if (activeFilters[field] && activeFilters[field].has(value)) {
+                   console.log(" ----Updating values from createFilterDropdown ----");
+                   console.log(checkbox);
+                   checkbox.checked = true;
+                   title.innerHTML = `${title.textContent}<span class="tick">✓</span>`;
+                   console.log(title.innerHTML);
+                   console.log(" ----FIN Updating values from createFilterDropdown ----");
+                }
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(" "+value));
+                checkboxList.appendChild(label);
+            });
+
+            // Add smooth dropdown toggle
+            title.addEventListener("click", function () {
+               checkboxList.classList.toggle("active");
+            });
+
+            dropdown.appendChild(title);
+            dropdown.appendChild(checkboxList);
+           // controlContainer.appendChild(dropdown);
+            dropdownContainer.appendChild(dropdown);
+        });
+
+        // Single Clear Filter Button
+        var clearBtn = createClearButton();
+
+        dropdownContainer.appendChild(clearBtn); // Adds clear button at the bottom
+        controlContainer.appendChild(dropdownContainer);
+    }
+
+    function createClearButton(){
+        let clearButton = document.createElement("button");
+        clearButton.textContent = "Clear Filters";
+        clearButton.className = "clear-filter-button";
+        clearButton.addEventListener("click", function (event) {
+            event.stopPropagation(); // Prevent dropdown from closing
+            // Uncheck all checkboxes
+            activeFilters = {};
+            removeAllCheckmarks();
+            document.querySelectorAll(".checkbox-list input[type='checkbox']").forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            filtros.clearLayers(); 
+            map.removeLayer(filtros);
+            map.addLayer(centros);
+        });
+        return clearButton;
+     }
+
+    function applyFilters() {  
+        activeFilters = {}; //Set active filters
+        
+        //Collect checked values
+        document.querySelectorAll(".checkbox-list input:checked").forEach(checkbox => {
+            let category = checkbox.parentElement.parentElement.parentElement.getAttribute("data-category");
+            if (!activeFilters[category]) activeFilters[category] = new Set();
+            activeFilters[category].add(checkbox.value);
+            checkbox.checked = true;
+        });
+
+        updateCheckmarks();
+        filtros.clearLayers(); // Reset filtered markers
+
+        if (Object.keys(activeFilters).length >0) {
+            Object.keys(comunidades).forEach(comunidad => {
+                comunidades[comunidad].forEach(grupo => {
+                    let match = Object.keys(activeFilters).every(category => {
+                        let fieldName = "f_" + category.replace(/ /g, "_"); // Convert back to gruposJSON field
+                        return grupo[fieldName] && grupo[fieldName].split(",").some(val => activeFilters[category].has(val.trim()));
+                    });
+                    if (match) filtros.addLayer(grupo.marker);
+                });
+            });
+            map.removeLayer(centros);
+            map.addLayer(filtros);
+        }else{
+            map.removeLayer(filtros);
+            map.addLayer(centros);
+        }
+      
+    }
+
+    // Function to update checkmarks in dropdown headers
+    function updateCheckmarks() {
+        removeAllCheckmarks();
+
+        Object.keys(activeFilters).forEach(category => {
+            let title = document.querySelector(`[data-category="${category}"]`).querySelector(".filter-title");
+            if (title) {
+                // Add tick only if the category has active filters
+                if (activeFilters[category].size > 0) {
+                    let tick = document.createElement("span");
+                    tick.className = "tick";
+                    tick.textContent = "✓";
+                    title.appendChild(tick);
+                }
+            }
+        });
+    }
+
+    function removeAllCheckmarks(){
+        let categorias = document.querySelectorAll(`.filter-title`);
+        categorias.forEach(title => {
+            let existingTick = title.querySelector("span");
+            if (existingTick) {
+                existingTick.remove(); // Remove only the tick span
+            }
+        });
+    }
+    </script>
+
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+    <script src="js/Leaflet.AnimatedSearchBox.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@5.0.10-beta/dist/fuse.min.js"></script>
+    
+    <script type="text/javascript">
+     
+     const searchbox = L.control.searchbox({
+            position: 'topright',
+            expand: 'left',
+            width: '450px',
+            autocompleteFeatures: ['setValueOnClick']
+        }).addTo(map);
+
+        //const layerControl = L.control.layers(overlays).addTo(map);
+        // Add layer control (radio buttons)
+        const layerControl = L.control.layers(overlays,{}, { collapsed: false }).addTo(map);
+        map.addLayer(centros); // Start with all markers visible
+
+
+     // Function to filter and show only matching markers in "filtros"
+    function filterSearchResults(filteredItems) {
+        filtros.clearLayers(); // Clear previous filtered results
+        
+        let validIds = new Set(filteredItems.map(item => item.id)); 
+
+        Object.keys(comunidades).forEach(comunidad => {
+            comunidades[comunidad].forEach(grupo => {
+                if (validIds.has(grupo.id)) { // Only add if it matches
+                    filtros.addLayer(grupo.marker);
+                }
+            });
+        });
+
+        // Switch to "Filtrados" layer automatically
+        map.removeLayer(centros);
+        map.addLayer(filtros);
+    }
+
+    // Searchbox event to trigger filtering
+    searchbox.onInput("keyup", function () {
+        let value = searchbox.getValue();
+        if (value !== "") {
+            let results = fuse.search(value);
+            let matchedItems = results.map(result => result.item);
+            filterSearchResults(matchedItems);
+        } else {
+            resetLayers(); // Show all markers if search is empty
+        }
+    });
+
+    searchbox.onButton("click", function () {
+        let value = searchbox.getValue();
+        if (value !== "") {
+            let results = fuse.search(value);
+            let matchedItems = results.map(result => result.item);
+            filterSearchResults(matchedItems);
+        }
+        closeSelect();
+    });
+
+
+    // Reset function: Switch back to "Todos"
+    function resetLayers() {
+        filtros.clearLayers(); // Clear filtered results
+        map.removeLayer(filtros);
+        map.addLayer(centros);
+
+        // Set "Todos" as selected layer in the control
+        layerControl._layerControlInputs.forEach(input => {
+            if (input.nextSibling.textContent.trim() === "Todos") {
+                input.checked = true;
+            }
+        });
+    }
+    function closeSelect(){
+        setTimeout(function () {
+             //searchbox.clearItems(); 
+                searchbox.hide();
+                searchbox.clear();
+            }, 200);
+    }
+  
+    searchbox.onAutocomplete("click", function (e) {
+        searchbox.setValue(e.target.innerHTML); // Establece el valor seleccionado en la caja de búsqueda
+        searchbox.clearItems(); // Oculta la lista de sugerencias
+        searchbox.hide(); // Cierra la caja de búsqueda
+        filterSearchResutls(true); // Filtra los resultados
+    });
+
+
+    // Watch for changes in the Leaflet layer control
+    const observer = new MutationObserver(() => {
+        createFilterDropdown(); // Re-add filters if removed
+    });
+
+    observer.observe(document.querySelector(".leaflet-control-layers-overlays"), {
+        childList: true, // Watch for new elements
+        subtree: true    // Include nested elements
+    });
+
+    </script>
+
+    <script type="text/javascript" src="./js/extras.js"></script>
+</body>
+</html>

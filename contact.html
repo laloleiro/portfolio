@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<meta name="description" content="Contact web for a wonderful developer and animation lover">
+		<meta name="author" content="@la_loleiro">
+		<style type="text/css">@-ms-viewport{width: device-width;}</style>
+		<title>@la_loleiro</title>
+   	<link rel="stylesheet" type="text/css" href="css/estilos.css">
+		<link rel="stylesheet" href="css/banana.css" media="screen">
+
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+		<![endif]-->
+		<link rel="icon" href="favicon.ico">
+          <style>
+						main{
+							background-color: #ffffff;
+							background-image:  repeating-linear-gradient(45deg, #99cccc 25%, transparent 25%, transparent 75%, #99cccc 75%, #99cccc), repeating-linear-gradient(45deg, #99cccc 25%, #ffffff 25%, #ffffff 75%, #99cccc 75%, #99cccc);
+							background-position: 0 0, 20px 20px;
+							background-size: 40px 40px;
+						}
+        </style>
+	</head>
+
+	<body class="page">
+		  <header>
+            <div class="logo">
+              <div id="gifs-rows">
+                <img src="img/feetClap/feetClap_2.png" alt="link to home page. It's a banana!">
+              </div>
+            </div>
+            <button class="iconoHamburguesa" onclick="mostrarOcultarMenu();">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                  <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                </svg>
+            </button>
+            <nav class="menuPrincipal">
+                <ul role="navigation">
+                    <li><a href="visualunderstanding.html">Visual Understanding</a></li>
+                    <li><a href="works.html" >Works</a></li>
+                    <li><a href="#" class="selected">Contact</a></li>
+                </ul>
+            </nav>
+        </header>
+
+		<main role="main">
+			<div class="intro-wrap">
+				  <h1 class="page-title">Say hello!</h1>
+          <div class="formbox">
+            <form method="post" name="contact_form" action="contact-form-handler.php">
+									<label for="name">Your Name:</label>
+								  <input type="text" name="name" required>
+								  <label for="email">Email Address:</label>
+								  <input type="email" name="email" required>
+								  <label for="message">Message:</label>
+								  <textarea name="message" required></textarea>
+								  <input type="submit" value="Send" class="ctaHOME">
+						</form>
+				    <p >You can also <a href="mailto:laulilolaloleiro@gmail.com" class="link">drop an email</a> to <b>laulilolaloleiro@gmail.com</b><br>or use <a href="https://www.linkedin.com/in/laura-m-26626a20/" target="_blank">social media</a>.</p>
+			 </div><!-- intro-wrap-box -->
+			</div><!-- intro-wrap -->
+    </main>
+         <footer>
+	    	<p>All rights reserved</p>
+        </footer>
+	</body>
+		<script src="js/jquery.js"></script>
+		<script src="js/main.js"></script>
+</html>

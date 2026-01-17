@@ -1,0 +1,268 @@
+const gruposJSON= [
+  {
+    "groupName": "Epidemiologia Genética y Molecular",
+    "centre": "Centro Nacional de Investigaciones Oncológicas (CNIO)",
+    "ciudad": "Madrid",
+    "latlong": "40.47613,-3.69403",
+    "OSM": "W465936079"
+  },
+  {
+    "groupName": "Grupo de investigación en cáncer de páncreas INCLIVA",
+    "centre": "Hospital Clínico Universitario de Valencia.Instituto de Investigación Sanitaria INCLIVA. Universidad de Valencia",
+    "ciudad": "Valencia",
+    "latlong": "39.478755,-0.3588256",
+    "OSM": "W30041933"
+  },
+  {
+    "groupName": "Epithelial Carcinogenesis Group",
+    "centre": "CNIO",
+    "ciudad": "Madrid",
+    "latlong": "40.47613,-3.69403",
+    "OSM": "W465936079"
+  },
+  {
+    "groupName": "Hormonas y Cancer",
+    "centre": "IMIBIC",
+    "ciudad": "Cordoba",
+    "latlong": "37.8680278,-4.796101918284698",
+    "OSM": "W558044943"
+  },
+  {
+    "groupName": "Metabolism and Cell Signaling Lab",
+    "centre": "CNIO",
+    "ciudad": "Madrid",
+    "latlong": "40.47613,-3.69403",
+    "OSM": "W465936079"
+  },
+  {
+    "groupName": "Epigenómica del Cáncer",
+    "centre": "Instituto de Investigación Sanitaria de Santiago (IDIS)",
+    "ciudad": "Santiago de Compostela",
+    "latlong": "42.8700961,-8.5653612",
+    "OSM": "N10055956682"
+  },
+  {
+    "groupName": "INMUNOLOGÍA",
+    "centre": "CINBIO- UNIVERSIDAD DE VIGO",
+    "ciudad": "Vigo",
+    "latlong": "42.1667199,-8.6841165",
+    "OSM": "N4199278490"
+  },
+  {
+    "groupName": "Metabolism and Cancer Stem Cells",
+    "centre": "IIS Aragón",
+    "ciudad": "Zaragoza",
+    "latlong": "41.64327125,-0.9034193767738858",
+    "OSM": "W24582429"
+  },
+  {
+    "groupName": "Nutrition Precision and Cancer Lab",
+    "centre": "IMDEA Alimentación",
+    "ciudad": "Madrid",
+    "latlong": "40.539502999999996,-3.6931309022918453",
+    "OSM": "W295643113"
+  },
+  {
+    "groupName": "Julie Earl",
+    "centre": "Instituto Ramón y Cajal de Investigación Sanitaria (IRYCIS)",
+    "ciudad": "Madrid",
+    "latlong": "40.48732805,-3.6938660704038133",
+    "OSM": "W394889262"
+  },
+  {
+    "groupName": "Bioquímica del Cáncer",
+    "centre": "Universidad de Girona",
+    "ciudad": "Girona",
+    "latlong": "41.9852758,2.828168945122764",
+    "OSM": "relation 1011460"
+  },
+  {
+    "groupName": "Molecular Interactions and Clinical Diagnosis",
+    "centre": "Universidad de Zaragoza - Instituto de Investigación Sanitaria de Aragón (IIS Aragón)",
+    "ciudad": "Zaragoza",
+    "latlong": "41.64327125,-0.9034193767738858",
+    "OSM": "W24582429"
+  },
+  {
+    "groupName": "Oncología Traslacional",
+    "centre": "Instituto de Investigación Hospital Universitario La Paz (IdiPAZ)",
+    "ciudad": "Madrid",
+    "latlong": "40.482397000000006,-3.688373868494865",
+    "OSM": "W829769833"
+  },
+  {
+    "groupName": "Digestive Diseases and Microbiota",
+    "centre": "Institut d'Investigació Biomèdica de Girona (IDIBGI)",
+    "ciudad": "Girona",
+    "latlong": "41.9712854,2.794722120388349",
+    "OSM": "W103212591"
+  },
+  {
+    "groupName": "Epidemiología y detección de biomarcadores moleculares en cáncer",
+    "centre": "Universidad de Barcelona - Instituto Catalán de Oncología",
+    "ciudad": "Barcelona",
+    "latlong": "41.3452787,2.1112991909109686",
+    "OSM": "W785933079"
+  },
+  {
+    "groupName": "Inflammation, Tissue Plasticity & Cancer",
+    "centre": "IRB Barcelona",
+    "ciudad": "Barcelona",
+    "latlong": "41.382036049999996,2.117888891370257",
+    "OSM": "W770232479"
+  },
+  {
+    "groupName": "Cancer Genome Engineering Lab",
+    "centre": "VHIO",
+    "ciudad": "Barcelona",
+    "latlong": "41.42872815,2.1374944310612287",
+    "OSM": "W625069477"
+  },
+  {
+    "groupName": "PANCGATE",
+    "centre": "HU PUERTA DE HIERRO MAJADAHONDA",
+    "ciudad": "MADRID",
+    "latlong": "40.45028585,-3.8736999198822497",
+    "OSM": "W1014019197"
+  },
+  {
+    "groupName": "Andrés J. Muñoz Martín",
+    "centre": "Hospital General Universitario Gregorio Marañón",
+    "ciudad": "Madrid",
+    "latlong": "40.419688449999995,-3.6711262290170836",
+    "OSM": "W262480721"
+  },
+  {
+    "groupName": "Hospital Infanta Sofia",
+    "centre": "Hospital Infanta Sofia",
+    "ciudad": "Madrid",
+    "latlong": "40.557951849999995,-3.6105713117352187",
+    "OSM": "W394889267"
+  },
+  {
+    "groupName": "Unidad de epidemiología de la Nutrición",
+    "centre": "Universidad Miguel Hernández (UMH)",
+    "ciudad": "Alicante",
+    "latlong": "38.3885382,-0.4366074270761147",
+    "OSM": "W20282038"
+  },
+  {
+    "groupName": "Grupo de Investigación Traslacional en Enfermedades del Aparato Digestivo (GITEAD)",
+    "centre": "Instituto de Investigación Sanitaria. Lab. 12. Planta -2. Complejo Hospitalario Universitario de Santiago de Compostela",
+    "ciudad": "Santiago de Compostela",
+    "latlong": "42.8700961,-8.5653612",
+    "OSM": "N10055956682"
+  },
+  {
+    "groupName": "Oncología Personalizada (A13)",
+    "centre": "ibs-Granada",
+    "ciudad": "Granada",
+    "latlong": "37.18762305,-3.6053925944066654",
+    "OSM": "W1122753827"
+  },
+  {
+    "groupName": "Páncreas regeneration",
+    "centre": "IDIBELL/UB",
+    "ciudad": "Barcelona",
+    "latlong": "41.34536095,2.104785907668183",
+    "OSM": "W248055112"
+  },
+  {
+    "groupName": "Gruo de Investigación en Cáncer de Páncreas IDIBAPS-Clinic Barcelona",
+    "centre": "IDIBAPS-Hospital Clinic Barcelona",
+    "ciudad": "Barcelona",
+    "latlong": "41.3885771,2.1509086",
+    "OSM": "node 4471571165"
+  },
+  {
+    "groupName": "Investigación Páncreas Exocrino",
+    "centre": "Instituto de Investigación Biomédica de Lleida + VHIR (IRBLleida), Hospital Arnau de Vilanova,",
+    "ciudad": "Lleida",
+    "latlong": "41.6268968,0.6128942241724484",
+    "OSM": "W416561068"
+  },
+  {
+    "groupName": "Cáncer de pancreas - Pilar Navarro y Fernando Burdío",
+    "centre": "Instituto de Investigaciones Biomédicas de Barcelona (IIBB-CSIC) / Unidad Asociada Hospital del Mar Research Institute· Barcelona ·",
+    "ciudad": "Barcelona",
+    "latlong": "41.3903943,2.1532788",
+    "OSM": "node 12156343830"
+  },
+  {
+    "groupName": "Tumor-Stroma Communication",
+    "centre": "CIPF",
+    "ciudad": "Valencia",
+    "latlong": "39.4523348,-0.3443939595693052",
+    "OSM": "W75078081"
+  },
+  {
+    "groupName": "PANCCUN",
+    "centre": "Cancer Center Clinica Universidad de Navarra",
+    "ciudad": "Pamplona",
+    "latlong": "42.8058167,-1.6642959885309305",
+    "OSM": "W507549064"
+  },
+  {
+    "groupName": "Unidad de Investigación Traslacional",
+    "centre": "Hospital General Universitario de Ciudad Real",
+    "ciudad": "Ciudad Real",
+    "latlong": "38.97002620000001,-3.931547046696858",
+    "OSM": "W263367113"
+  },
+  {
+    "groupName": "Dr Angela Lamarca",
+    "centre": "Hospital Universitario Fundacion Jimenez Diaz",
+    "ciudad": "Madrid",
+    "latlong": "40.43883655,-3.719280167652232",
+    "OSM": "W394889273"
+  },
+  {
+    "groupName": "Grupo Oncologia Molecular UFV-H12O",
+    "centre": "Universidad Francisco de Vitoria/Hospital 12 de octubre",
+    "ciudad": "Madrid",
+    "latlong": "40.376385,-3.6980552193727467",
+    "OSM": "W27888617"
+  },
+  {
+    "groupName": "Nuevas Terapias en Cáncer",
+    "centre": "Instituto Maimónides de Investigación Biomédica de Córdoba",
+    "ciudad": "Córdoba",
+    "latlong": "37.86840305,-4.797182952409715",
+    "OSM": "W96949581"
+  },
+  {
+    "groupName": "Corbo Lab",
+    "centre": "University of Verona",
+    "ciudad": "Verona",
+    "latlong": "45.43633945,11.003030121451761",
+    "OSM": "W23936318"
+  },
+  {
+    "groupName": "Microenvironment and Metastasis",
+    "centre": "CNIO",
+    "ciudad": "Madrid",
+    "latlong": "40.47613,-3.69403",
+    "OSM": "W465936079"
+  },
+  {
+    "groupName": "Computational Cancer Genomics",
+    "centre": "Botton-Champalimaud Pancreatic Cancer Centre",
+    "ciudad": "Lisboa",
+    "latlong": "38.69518615,-9.223395750322787",
+    "OSM": "W942523940"
+  },
+  {
+    "groupName": "Grupo de Angiogénesis. Área de Oncología.",
+    "centre": "Centro de Investigación Biomédica de La Rioja (CIBIR)",
+    "ciudad": "Logroño",
+    "latlong": "42.4511593,-2.426990996555385",
+    "OSM": "W1172870559"
+  },
+  {
+    "groupName": "Ablative therapies in oncology surgery",
+    "centre": "Hospital del Mar Research Institute",
+    "ciudad": "Barcelona",
+    "latlong": "41.38512085,2.193990726318065",
+    "OSM": "W74068875"
+  }
+];
