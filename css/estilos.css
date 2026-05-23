@@ -82,6 +82,8 @@ header{
 	justify-content: space-between;
 	align-items: center;
 	font-size: 1.2rem;
+	position: relative;
+	z-index: 100;
 }
 .menuPrincipal ul{
 	list-style: none;
@@ -112,10 +114,10 @@ header{
 .textohome{
 		margin-left: 20%;
 	 	height: 70vh; /** 500px;*/
-    /*width: 50%;   /** 500px;*/
-    position: absolute;
-    top:30vh;
-    z-index:-1;
+     /*width: 50%;   /** 500px;*/
+     position: absolute;
+     top:30vh;
+     z-index: 10;
 }
 .intro-mockup-wrapper{
 	display: flex;
@@ -198,8 +200,8 @@ footer img{
 }
 .work_title{
   	font-weight: 700;
-    height:2.5em;
-    margin-top: 1em;
+     height:2.5em;
+     margin-top: 1em;
 }
 .item-col-3 ul li{
   margin:0.5em;
@@ -294,15 +296,15 @@ input[type=submit]{
 	}
 	header nav.activo{
 		/*display:block;*/
-    height: 25vh;
+     height: 25vh;
 		pointer-events: auto;
-    background-color: white;
-    position:relative;
-    z-index: 10;
+     background-color: white;
+     position:relative;
+     z-index: 10;
 	}
   .page-title{
-    padding-top:1em;
-  }
+     padding-top:1em;
+   }
 	.textohome h2{
 		display:none;
 	}
